@@ -1,0 +1,45 @@
+.Task{
+    display: flex;
+    list-style: none;
+    width: 60%;
+    height: 60px;
+    padding: 0;
+    align-items: center;
+    margin: 20px auto;
+    border-radius: 10px;
+}
+
+.Task__description{
+    width: 40%;
+    padding: 5px;
+    text-align: center;
+}
+
+.Task__date{
+    width: 20%;
+    padding: 5px;
+}
+
+.Task__file{
+    width: 20%;
+}
+
+.fileLabel{
+    padding: 0px;
+    margin: 0px;
+}
+
+.FileChooser{
+    display: flex;
+    justify-content: center;
+}
+
+.FileInput{
+    visibility: hidden;
+    width: 0px;
+    height: 0px;
+}
+
+.Task__status{
+    width: 20%;
+}
