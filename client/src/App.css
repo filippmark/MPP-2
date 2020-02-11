@@ -1,0 +1,9 @@
+.Filters{
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    padding: 0px;
+    width: 60%;
+    height: 30px;
+    margin: 5px auto;
+}

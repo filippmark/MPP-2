@@ -12,7 +12,7 @@ class Task extends Component {
         return (
             <ul className="Task shadow">
                 <li className="Task__description">
-                    lkjdlf
+                    <input className="border-0 w-75" type="text"></input>
                 </li>
                 <li className="Task__date">
                    deadline: 29.12.2019
@@ -20,11 +20,11 @@ class Task extends Component {
                 <li className="Task__file">
                     <div className="FileChooser">
                         <input className="FileInput" type="file" id="inputGroupFile"/>
-                        <label for="inputGroupFile" className="fileLabel btn btn-secondary">Choose file</label>
+                        <label htmlFor="inputGroupFile" className="fileLabel btn btn-secondary">Choose file</label>
                     </div>
                 </li>
                 <li className="Task__status">
-                    <select class="custom-select border-0">
+                    <select className="custom-select border-0">
                         <option value="0"> todo </option>
                         <option value="1"> in progress </option>
                         <option value="2"> ready </option>
