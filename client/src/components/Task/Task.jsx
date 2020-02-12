@@ -12,10 +12,11 @@ class Task extends Component {
         return (
             <ul className="Task shadow">
                 <li className="Task__description">
-                    <input className="border-0 w-75" type="text"></input>
+                    <input className="border-0 w-75" type="text" placeholder="enter description"></input>
                 </li>
                 <li className="Task__date">
-                   deadline: 29.12.2019
+                    <label htmlFor="deadlineInput" className="m-0  mr-1"> deadline </label>
+                    <input className="border-0 w-75" type="text" id="deadlineInput"></input>
                 </li>
                 <li className="Task__file">
                     <div className="FileChooser">

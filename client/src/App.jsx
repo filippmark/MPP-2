@@ -6,8 +6,9 @@ export default class App extends Component {
 
   state = {
     showTodos: true,
-    showInProgres: true,
-    showReady: true
+    showInProgress: true,
+    showReady: true,
+    tasks: []
   }
   
   _updateFilter = (event) => {
@@ -22,6 +23,11 @@ export default class App extends Component {
     return (
       <div>
         <ul className="Filters shadow-sm">
+          <li className="mr-1">
+            <button type="button" class="btn btn-secondary">
+              Add
+            </button>
+          </li>
           <li>
             <div className="form-check form-check-inline">
               <input className="form-check-input" name="showTodos" type="checkbox" id="todo" onChange={this._updateFilter} checked={this.state.showTodos}/>
@@ -30,7 +36,7 @@ export default class App extends Component {
           </li>
           <li>
             <div className="form-check form-check-inline">
-              <input className="form-check-input" name="showInProgress" type="checkbox" id="inProgress" onChange={this._updateFilter} checked={this.state.showInProgres}/>
+              <input className="form-check-input" name="showInProgress" type="checkbox" id="inProgress" onChange={this._updateFilter} checked={this.state.showInProgress}/>
               <label className="form-check-label" htmlFor="inProgress"> in progress </label>
             </div>
           </li>
