@@ -1,29 +1,38 @@
 .Task{
     display: flex;
     list-style: none;
-    width: 60%;
+    width: 80%;
     height: 60px;
     padding: 0;
     align-items: center;
-    margin: 20px auto;
     border-radius: 10px;
+    margin-left: 6%;
+    animation: taskAppereance 1s;
+}
+
+.TaskWrapper{
+    display: flex;
+    margin: 20px auto;
+    width: 80%;
+    justify-content: center;
 }
 
 .Task__description{
-    width: 40%;
+    width: 38%;
     padding: 5px;
     text-align: center;
 }
 
 .Task__date{
-    width: 20%;
+    width: 22%;
     padding: 5px;
     display: flex;
     align-items: center;
 }
 
 .Task__file{
-    width: 20%;
+    width: 22%;
+    overflow-y: auto;
 }
 
 .fileLabel{
@@ -43,5 +52,37 @@
 }
 
 .Task__status{
-    width: 20%;
+    width: 18%;
+}
+
+.savebtn{
+    margin-top: 12px;
+}
+
+.savebtn.visible{
+    animation:  saveBtnAppereance 500ms;
+}
+
+
+@keyframes taskAppereance{
+
+    from{
+        opacity: 0;
+    }
+
+    to{
+        opacity: 1;
+    }
+}
+
+@keyframes saveBtnAppereance{
+    
+    from{
+        transform: rotate(0deg);
+    }
+
+    to{
+        transform: rotate(360deg);
+    }
+
 }
