@@ -25,8 +25,11 @@ let taskScheme = new Schema({
     },
     progress: {
         type: String
+    },
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'user',
     }
-
 })
 
-module.exports = mongoose.model("task", taskScheme)
+module.exports = mongoose.model("taskWithUserId", taskScheme)

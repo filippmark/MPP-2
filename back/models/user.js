@@ -3,10 +3,10 @@ const Schema = mongoose.Schema;
 const bcrypt = require("../node_modules/bcrypt/bcrypt");
 require("../node_modules/dotenv").config();
 
-mongoose.connect(process.env.DB_ADDRESS, { useNewUrlParser: true, useUnifiedTopology: true, dbName: "MPP2"})
-    .catch(error => {
-        console.log(error);
-    });
+mongoose.connect(process.env.DB_ADDRESS, { useNewUrlParser: true, useUnifiedTopology: true, dbName: "MPP2" })
+  .catch(error => {
+    console.log(error);
+  });
 mongoose.set("useCreateIndex", true);
 mongoose.set("useFindAndModify", true);
 
@@ -19,17 +19,13 @@ const userScheme = new Schema({
   password: {
     type: String,
     required: true
-  },
-  isAdmin: {
-    type: Boolean,
-    required: true
   }
 });
 
-userScheme.pre("save", function(next) {
+userScheme.pre("save", function (next) {
   if (this.isNew) {
     const user = this;
-    bcrypt.hash(user.password, 10, function(err, hash) {
+    bcrypt.hash(user.password, 10, function (err, hash) {
       if (err) {
         next(err);
       } else {

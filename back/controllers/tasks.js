@@ -2,12 +2,9 @@ const Task = require('../models/task');
 
 exports.getTasks = async (req, res, next) => {
 
+    const { progress } = req.query;
+
     try {
-
-        let { progress } = req.query;
-
-        console.log(progress);
-
         let tasks = await Task.find({ progress: { $in: progress.split(',') } });
 
         return res.status(200).send(tasks);
@@ -19,8 +16,6 @@ exports.getTasks = async (req, res, next) => {
 }
 
 exports.addTask = async (req, res, next) => {
-
-
     const { description, date, file, progress } = req.body;
 
     try {
@@ -29,7 +24,8 @@ exports.addTask = async (req, res, next) => {
             description,
             date,
             file,
-            progress
+            progress,
+            userId: req.user.id
         });
 
         task = await task.save();
@@ -45,13 +41,17 @@ exports.addTask = async (req, res, next) => {
 
 exports.updateTask = async (req, res) => {
 
-    console.log(req.params);
-    console.log(req.body);
-
     const { taskId } = req.params;
     const { description, date, file, progress } = req.body;
 
-    const updatedTask = await Task.updateOne({ _id: taskId }, { $set: { description, date, file, progress } });
+    try {
 
-    res.status(200).send(updatedTask);
+        const updatedTask = await Task.updateOne({ _id: taskId }, { $set: { description, date, file, progress } });
+
+        res.status(200).send(updatedTask);
+
+    } catch (err) {
+        console.log(err);
+        return res.status(500).send();
+    }
 }
