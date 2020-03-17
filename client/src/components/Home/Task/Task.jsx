@@ -9,6 +9,20 @@ class Task extends Component {
         ...this.props,
     }
 
+
+    static getDerivedStateFromProps(props, state) {
+
+        if (props.isNew !== state.isNew) {
+            return {
+                ...state,
+                isNew: props.isNew,
+                _id: props.index
+            };
+        } else {
+            return state;
+        }
+    }
+
     _changeHandler = (event) => {
 
         this.setState({
@@ -81,7 +95,7 @@ class Task extends Component {
 
         return (
             <div className="TaskWrapper">
-                <ul className="Task shadow">
+                <ul className={`Task shadow`}>
                     <li className="Task__description">
                         <input className="border-0 w-75" name="description" type="text" placeholder="enter description" value={description} onChange={this._changeHandler} />
                     </li>

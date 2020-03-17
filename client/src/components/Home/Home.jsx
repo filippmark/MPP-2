@@ -20,9 +20,7 @@ export default class Home extends Component {
     }
 
     componentDidMount() {
-
         this._getTasks(['todo', 'in progress', 'ready']);
-
     }
 
     _getTasks = async (states) => {
@@ -64,6 +62,8 @@ export default class Home extends Component {
 
         const tasks = [...this.state.tasks];
 
+        const index = Date.now() + tasks.length + 1;
+
         tasks.push({
             description: '',
             date: '',
@@ -71,6 +71,7 @@ export default class Home extends Component {
             progress: 'todo',
             isChanged: true,
             isNew: true,
+            index
         })
 
         this.setState({
@@ -83,8 +84,6 @@ export default class Home extends Component {
 
     _updateTask = async (task) => {
 
-        console.log(task);
-
         try {
 
             let response;
@@ -93,13 +92,30 @@ export default class Home extends Component {
                 response = await axios.post("http://localhost:8080/tasks", {
                     ...task
                 }, { withCredentials: true });
+
+                const tasks = [...this.state.tasks];
+
+                const deleteStartIndex = tasks.findIndex((value) => { return value.index === task.index });
+
+                tasks.splice(deleteStartIndex, 1);
+
+                tasks.splice(deleteStartIndex, 0, {
+                    ...task,
+                    _id: response.data._id,
+                    isNew: false,
+                    isChanged: false
+                });
+
+                this.setState({
+                    ...this.state,
+                    tasks
+                });
+
             } else {
-                response = await axios.put(`http://localhost:8080/tasks/${task.index}`, {
+                response = await axios.put(`http://localhost:8080/tasks/${task._id ? task._id : task.index}`, {
                     ...task
                 }, { withCredentials: true });
             }
-
-            console.log(response);
 
         } catch (error) {
             console.log(error);
@@ -114,10 +130,12 @@ export default class Home extends Component {
 
             const tasks = [...this.state.tasks];
 
-            tasks.splice(tasks.find((value) => { return value.index === task.index }), 1);
+            tasks.splice(tasks.findIndex((value) => { return value.index === task.index }), 1);
+
 
             if (!task.isNew) {
-                response = await axios.delete(`http://localhost:8080/tasks/${task.index}`, { withCredentials: true });
+                response = await axios.delete(`http://localhost:8080/tasks/${task._id ? task._id : task.index}`, { withCredentials: true });
+                console.log(response);
             }
 
             this.setState({
@@ -161,12 +179,12 @@ export default class Home extends Component {
                         </li>
                     </ul>
                     {
-                        this.state.tasks.map((task, index) => {
+                        this.state.tasks.map((task) => {
 
-                            const { description, date, filepath, progress, isChanged, isNew, _id } = task;
+                            const { description, date, filepath, progress, isChanged, isNew, _id, index } = task;
 
                             return <Task
-                                key={_id ? _id : index}
+                                key={index ? index : _id}
                                 index={_id ? _id : index}
                                 description={description}
                                 date={date} filepath={filepath}

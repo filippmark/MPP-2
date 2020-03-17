@@ -7,6 +7,9 @@
     align-items: center;
     border-radius: 10px;
     margin-left: 6%;
+}
+
+.NewTask{
     animation: taskAppereance 1s;
 }
 

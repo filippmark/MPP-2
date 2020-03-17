@@ -30,7 +30,7 @@ exports.addTask = async (req, res, next) => {
 
         task = await task.save();
 
-        return res.sendStatus(200);
+        return res.status(200).send(task);
 
     } catch (err) {
         console.log(err);
@@ -64,6 +64,8 @@ exports.deleteTask = async (req, res) => {
 
     try {
 
+        console.log("deletion");
+
         const result = await Task.findByIdAndDelete(taskId);
 
         console.log(result);
@@ -71,7 +73,7 @@ exports.deleteTask = async (req, res) => {
         res.status(200).send();
 
     } catch (error) {
-        console.log(err);
+        console.log(error);
         return res.status(500).send();
     }
 
