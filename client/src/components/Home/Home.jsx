@@ -135,7 +135,6 @@ export default class Home extends Component {
 
             if (!task.isNew) {
                 response = await axios.delete(`http://localhost:8080/tasks/${task._id ? task._id : task.index}`, { withCredentials: true });
-                console.log(response);
             }
 
             this.setState({
