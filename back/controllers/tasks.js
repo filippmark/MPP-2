@@ -55,3 +55,24 @@ exports.updateTask = async (req, res) => {
         return res.status(500).send();
     }
 }
+
+exports.deleteTask = async (req, res) => {
+
+    console.log(req.params);
+
+    const { taskId } = req.params;
+
+    try {
+
+        const result = await Task.findByIdAndDelete(taskId);
+
+        console.log(result);
+
+        res.status(200).send();
+
+    } catch (error) {
+        console.log(err);
+        return res.status(500).send();
+    }
+
+}

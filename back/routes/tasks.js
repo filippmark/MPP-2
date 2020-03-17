@@ -8,4 +8,6 @@ tasksRouter.post('/tasks', jwtHelpers.isValidToken, tasksController.addTask);
 
 tasksRouter.put('/tasks/:taskId', jwtHelpers.isValidToken, tasksController.updateTask);
 
+tasksRouter.delete('/tasks/:taskId', jwtHelpers.isValidToken, tasksController.deleteTask);
+
 module.exports = tasksRouter;

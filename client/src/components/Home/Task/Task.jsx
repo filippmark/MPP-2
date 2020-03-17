@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Button } from 'reactstrap';
 import './Task.css';
 import moment from 'moment';
 
@@ -70,6 +71,10 @@ class Task extends Component {
         });
     }
 
+    _deleteTask = (event) => {
+        this.props.deleteTask(this.state);
+    }
+
     render() {
 
         const { description, date, filepath, progress } = this.state;
@@ -105,6 +110,9 @@ class Task extends Component {
                             <option value="in progress"> in progress </option>
                             <option value="ready"> ready </option>
                         </select>
+                    </li>
+                    <li className="Task__delete">
+                        <Button close onClick={this._deleteTask} ></Button>
                     </li>
                 </ul>
                 <button disabled={!this.state.isDateValid || this.state.description.length === 0} className={`btn btn-secondary ml-1 h-75 savebtn ${this.state.isChanged ? "visible" : "invisible"}`} onClick={this._saveChanges}>

@@ -106,6 +106,30 @@ export default class Home extends Component {
         }
     }
 
+    _deleteTask = async (task) => {
+
+        try {
+
+            let response;
+
+            const tasks = [...this.state.tasks];
+
+            tasks.splice(tasks.find((value) => { return value.index === task.index }), 1);
+
+            if (!task.isNew) {
+                response = await axios.delete(`http://localhost:8080/tasks/${task.index}`, { withCredentials: true });
+            }
+
+            this.setState({
+                ...this.state,
+                tasks
+            });
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     render() {
         if (this.context.isAuthorised) {
 
@@ -150,6 +174,7 @@ export default class Home extends Component {
                                 isDateValid={moment(date, 'DD.MM.YYYY').isValid()}
                                 isChanged={isChanged}
                                 updateTask={this._updateTask}
+                                deleteTask={this._deleteTask}
                                 isNew={isNew}>
                             </Task>
                         })
