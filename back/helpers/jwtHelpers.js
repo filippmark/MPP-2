@@ -11,12 +11,13 @@ exports.createToken = async (res, body) => {
 
         console.log(token);
 
-        return res.cookie('token', token, {
+        res.cookie('token', token, {
             expires: new Date(Date.now() + lifeTime),
             secure: false,
             httpOnly: true,
-        }).send();
+        });
     } catch (error) {
+        console.log('here');
         console.log(error);
         res.status(500).send();
     }

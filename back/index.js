@@ -4,9 +4,11 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const tasksRouter = require('./routes/tasks');
 const authRouter = require('./routes/authentification');
-const { graphqlExpress } = require('apollo-server-express');
+var graphqlHTTP = require('express-graphql');
+var { buildSchema } = require('graphql');
 const { isValidToken } = require('./helpers/jwtHelpers');
-const schema = require('schema.js');
+const { schema, resolvers } = require('./graphql/schema');
+const { removeToken } = require('./helpers/jwtHelpers');
 require('dotenv').config();
 
 let app = express();
@@ -21,10 +23,15 @@ app.use(cors({
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.use('/graphql', isValidToken, graphqlExpress(req => ({
-    schema,
+app.use('/signOut', removeToken);
+
+app.use('/graphql', isValidToken, graphqlHTTP((req, res) => ({
+    schema: buildSchema(schema),
+    rootValue: resolvers,
+    graphiql: true,
     context: {
-        user: req.user
+        req,
+        res
     }
 })));
 

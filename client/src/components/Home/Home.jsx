@@ -5,6 +5,7 @@ import moment from 'moment';
 import axios from 'axios';
 import { AuthContext } from '../../context';
 import { Redirect } from 'react-router-dom';
+import { graphqlEndpoint } from '../../App';
 
 export default class Home extends Component {
 
@@ -20,22 +21,40 @@ export default class Home extends Component {
     }
 
     componentDidMount() {
-        this._getTasks(['todo', 'in progress', 'ready']);
+        this._getTasks(["todo", "in progress", "ready"]);
     }
 
     _getTasks = async (states) => {
         try {
-            const response = await axios.get(`http://localhost:8080/tasks?progress=${states.join(',')}`, { withCredentials: true });
+
+            console.log(JSON.stringify(states).slice(1, -1));
+
+            const response = await axios.post(graphqlEndpoint, {
+
+
+                query: `
+                    query{
+                        getTasks(progress: [${JSON.stringify(states).slice(1, -1)}]){
+                            _id,
+                            description,
+                            date,
+                            progress
+                        }
+                    }
+                `
+            }, { withCredentials: true });
+
+            console.log(response);
 
             this.setState({
                 ...this.state,
-                tasks: response.data
+                tasks: response.data.data.getTasks
             });
 
 
         } catch (error) {
             console.log(error.response);
-            if (error.response.status === 401) {
+            if (error.response && error.response.status === 401) {
                 this.context.setAuthorised(false);
                 this.props.history.push('/sign-in');
             }
@@ -90,10 +109,22 @@ export default class Home extends Component {
 
             let response;
 
+            const { description, date, progress } = task;
+
             if (task.isNew) {
-                response = await axios.post("http://localhost:8080/tasks", {
-                    ...task
+
+
+                response = await axios.post(graphqlEndpoint, {
+                    query: `
+                        mutation{
+                                createTask(task: {description: "${description}", date: "${date}", progress:"${progress}"}){
+                                _id
+                            }
+                        }
+                    `
                 }, { withCredentials: true });
+
+                console.log(response);
 
                 const tasks = [...this.state.tasks];
 
@@ -103,7 +134,7 @@ export default class Home extends Component {
 
                 tasks.splice(deleteStartIndex, 0, {
                     ...task,
-                    _id: response.data._id,
+                    _id: response.data.data.createTask._id,
                     isNew: false,
                     isChanged: false
                 });
@@ -114,9 +145,18 @@ export default class Home extends Component {
                 });
 
             } else {
-                response = await axios.put(`http://localhost:8080/tasks/${task._id ? task._id : task.index}`, {
-                    ...task
+                console.log(task);
+                response = await axios.post(graphqlEndpoint, {
+                    query: `
+                        mutation{
+                            updateTask(task: {id: "${task._id ? task._id : task.index}", description: "${description}", date: "${date}", progress:"${progress}"}){
+                                description
+                            }
+                        }                    
+                    `
                 }, { withCredentials: true });
+
+                console.log(response);
             }
 
         } catch (error) {
@@ -136,7 +176,16 @@ export default class Home extends Component {
 
 
             if (!task.isNew) {
-                response = await axios.delete(`http://localhost:8080/tasks/${task._id ? task._id : task.index}`, { withCredentials: true });
+                response = await axios.post(graphqlEndpoint, {
+                    query: `
+                        mutation{
+                            deleteTask(taskId: "${task._id ? task._id : task.index}"){
+                                description
+                            }
+                        }                    
+                    `
+                }, { withCredentials: true });
+                console.log(response);
             }
 
             this.setState({

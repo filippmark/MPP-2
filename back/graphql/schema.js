@@ -1,0 +1,47 @@
+const taskControllers = require('../controllers/tasks');
+const userControllers = require('../controllers/user');
+
+exports.schema = `
+  type User {
+    id: Int!
+    username: String!
+    email: String!
+  }
+
+  type Task {
+    _id: String!
+    description: String!
+    date: String!
+    progress: String!
+  }
+
+  input TaskInput {
+    id: String
+    description: String!
+    date: String!
+    progress: String!
+  }
+  
+  type Query {
+    getTasks(progress: [String!]!): [Task!]!
+    signIn (email: String!, password: String!): String
+  }
+
+  type Mutation {
+    signUp (email: String!, password: String!): String
+    createTask(task: TaskInput!): Task!
+    updateTask(task: TaskInput!): Task!
+    deleteTask(taskId: String!): Task!
+  }
+`
+
+exports.resolvers = {
+  getTasks: taskControllers.getTasks,
+  signIn: userControllers.checkForUserExistence,
+  signUp: userControllers.createNewUser,
+  createTask: taskControllers.addTask,
+  updateTask: taskControllers.updateTask,
+  deleteTask: taskControllers.deleteTask
+
+}
+

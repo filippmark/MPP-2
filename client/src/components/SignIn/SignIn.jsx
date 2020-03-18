@@ -6,6 +6,7 @@ import './SignIn.css';
 import { isEmail } from 'validator';
 import * as PasswordValidator from 'password-validator';
 import { AuthContext } from '../../context';
+import { graphqlEndpoint } from '../../App';
 
 export default class SignIn extends React.Component {
 
@@ -51,10 +52,15 @@ export default class SignIn extends React.Component {
 
         try {
 
-            const response = await axios.post('http://localhost:8080/signIn', {
-                email: this.state.email,
-                password: this.state.password
+            const response = await axios.post(graphqlEndpoint, {
+                query: `
+                    query{
+                        signIn(email: "${this.state.email}", password: "${this.state.password}")
+                    }
+                `
             }, { withCredentials: true });
+
+
 
             console.log(response);
             this.context.setAuthorised(true);

@@ -1,80 +1,82 @@
 const Task = require('../models/task');
 
-exports.getTasks = async (req, res, next) => {
+exports.getTasks = async ({ progress }, { req, res }) => {
 
-    const { progress } = req.query;
+    if (req.user) {
+        try {
+            let tasks = await Task.find({ userId: req.user.id, progress: { $in: progress } });
 
-    try {
-        let tasks = await Task.find({ progress: { $in: progress.split(',') } });
-
-        return res.status(200).send(tasks);
-
-    } catch (err) {
-        return res.status(500).send();
+            return tasks;
+        } catch (err) {
+            console.log(err);
+            throw err;
+        }
     }
-
+    throw new Error('unathorised');
 }
 
-exports.addTask = async (req, res, next) => {
-    const { description, date, file, progress } = req.body;
+exports.addTask = async ({ task: { description, date, progress } }, { req, res }) => {
 
-    try {
+    if (req.user) {
+        try {
 
-        let task = new Task({
-            description,
-            date,
-            file,
-            progress,
-            userId: req.user.id
-        });
+            let task = new Task({
+                description,
+                date,
+                file: null,
+                progress,
+                userId: req.user.id
+            });
 
-        task = await task.save();
+            task = await task.save();
 
-        return res.status(200).send(task);
+            console.log(task);
 
-    } catch (err) {
-        console.log(err);
-        return res.status(500).send();
+            return task;
+
+        } catch (err) {
+            console.log(err);
+            throw err;
+        }
     }
-
+    throw new Error('unathorised');
 }
 
-exports.updateTask = async (req, res) => {
+exports.updateTask = async ({ task: { id, description, date, progress } }, { req }) => {
 
-    const { taskId } = req.params;
-    const { description, date, file, progress } = req.body;
+    console.log(req.user);
+    console.log(id);
+    if (req.user) {
+        try {
 
-    try {
+            const updatedTask = await Task.findOneAndUpdate({ _id: id }, { $set: { description, date, progress } });
 
-        const updatedTask = await Task.updateOne({ _id: taskId }, { $set: { description, date, file, progress } });
+            console.log(updatedTask);
 
-        res.status(200).send(updatedTask);
+            return updatedTask;
 
-    } catch (err) {
-        console.log(err);
-        return res.status(500).send();
+        } catch (err) {
+            console.log(err);
+            throw err;
+        }
     }
+
+    throw new Error('unathorised');
 }
 
-exports.deleteTask = async (req, res) => {
+exports.deleteTask = async ({ taskId }, { req, res }) => {
 
-    console.log(req.params);
+    if (req.user) {
+        try {
 
-    const { taskId } = req.params;
+            const result = await Task.findByIdAndDelete(taskId);
 
-    try {
+            return result;
 
-        console.log("deletion");
-
-        const result = await Task.findByIdAndDelete(taskId);
-
-        console.log(result);
-
-        res.status(200).send();
-
-    } catch (error) {
-        console.log(error);
-        return res.status(500).send();
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
     }
-
+    throw new Error('unathorised');
 }
