@@ -32,15 +32,16 @@ exports.isValidToken = async (req, res, next) => {
     const token = req.cookies ? req.cookies.token : false;
     try {
         if (!token) {
-            return res.status(401).json('You should to Login')
+            req.user = false;
+            next();
+        } else {
+            const decrypt = await jwt.verify(token, process.env.JWT_SECRET);
+            req.user = {
+                id: decrypt.id,
+                email: decrypt.email,
+            };
+            next();
         }
-        const decrypt = await jwt.verify(token, process.env.JWT_SECRET);
-        req.user = {
-            id: decrypt.id,
-            email: decrypt.email,
-        };
-        console.log(req.user);
-        next();
     } catch (err) {
         return res.status(500).json(err.toString());
     }

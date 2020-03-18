@@ -4,6 +4,9 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const tasksRouter = require('./routes/tasks');
 const authRouter = require('./routes/authentification');
+const { graphqlExpress } = require('apollo-server-express');
+const { isValidToken } = require('./helpers/jwtHelpers');
+const schema = require('schema.js');
 require('dotenv').config();
 
 let app = express();
@@ -18,15 +21,14 @@ app.use(cors({
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.use('/', tasksRouter);
-
-app.use('/', authRouter);
-
-app.get("/", (req, res) => {
-    res.send("vse chetka");
-})
+app.use('/graphql', isValidToken, graphqlExpress(req => ({
+    schema,
+    context: {
+        user: req.user
+    }
+})));
 
 
 app.listen(8080, () => {
     console.log("Server started")
-})
+});
