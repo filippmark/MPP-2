@@ -103,21 +103,6 @@ class Task extends Component {
                         <label htmlFor={`deadlineInput-${this.props.index}`} className="m-0  mr-1"> date </label>
                         <input className="form-control border-0 w-75" placeholder="DD.MM.YYYY" type="text" id={`deadlineInput-${this.props.index}`} value={date} onChange={this._dateChangeHandler} />
                     </li>
-                    {
-                        filepath ?
-                            (<li className="Task__file">
-                                <div className="FileChooser">
-                                    {filepath && filepath.name}
-                                </div>
-                            </li>)
-                            :
-                            (<li className="Task__file">
-                                <div className="FileChooser">
-                                    <input className="FileInput" type="file" id={`inputGroupFile-${this.props.index}`} onChange={this._fileChangeHandler} />
-                                    <label htmlFor={`inputGroupFile-${this.props.index}`} className="fileLabel btn btn-secondary">Choose file</label>
-                                </div>
-                            </li>)
-                    }
                     <li className="Task__status">
                         <select className="custom-select border-0" name="progress" value={progress} onChange={this._changeHandler}>
                             <option value="todo"> todo </option>
