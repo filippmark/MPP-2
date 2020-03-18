@@ -34,9 +34,11 @@ export default class Home extends Component {
 
 
         } catch (error) {
-            console.log(error);
-            this.context.setAuthorised(false);
-            this.props.history.push('/sign-in');
+            console.log(error.response);
+            if (error.response.status === 401) {
+                this.context.setAuthorised(false);
+                this.props.history.push('/sign-in');
+            }
         }
 
     }
