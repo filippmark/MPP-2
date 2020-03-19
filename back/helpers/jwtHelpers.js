@@ -19,7 +19,7 @@ exports.createToken = async (res, body) => {
     } catch (error) {
         console.log('here');
         console.log(error);
-        res.status(500).send();
+        //res.status(500).send();
     }
 }
 
