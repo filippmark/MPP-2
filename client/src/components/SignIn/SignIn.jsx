@@ -52,15 +52,9 @@ export default class SignIn extends React.Component {
 
         try {
 
-            const response = await axios.post(graphqlEndpoint, {
-                query: `
-                    query{
-                        signIn(email: "${this.state.email}", password: "${this.state.password}")
-                    }
-                `
-            }, { withCredentials: true });
-
-
+            const response = await axios.post('http://localhost:8080/signIn',
+                { email: this.state.email, password: this.state.password },
+                { withCredentials: true });
 
             console.log(response);
             this.context.setAuthorised(true);
@@ -68,7 +62,8 @@ export default class SignIn extends React.Component {
             this.props.history.push('/');
 
         } catch (error) {
-            console.log(error);
+            console.log(error.response);
+            this.setState({ ...this.state, signInError: error.response.data })
             this.context.setAuthorised(false);
         }
     }
@@ -94,6 +89,7 @@ export default class SignIn extends React.Component {
                     </FormGroup>
                     <Button color="secondary" size="md" disabled={isEmailInvalid || isPasswordInvalid} onClick={this._handleSignIn}> Sign in </Button>
                 </Form>
+                {this.state.signInError && (<div className="error-block"> {this.state.signInError} </div>)}
             </div>
         )
     }

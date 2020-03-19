@@ -6,7 +6,9 @@ import SignIn from './components/SignIn/SignIn';
 import SignUp from './components/SignUp/SignUp';
 import Navbar from './components/Global/Navbar/Navbar';
 import { AuthContext } from './context';
+import './App.css';
 export const graphqlEndpoint = 'http://localhost:8080/graphql';
+
 
 class App extends Component {
 

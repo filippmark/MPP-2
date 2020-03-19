@@ -1,6 +1,6 @@
 const Task = require('../models/task');
 
-exports.getTasks = async ({ progress }, { req, res }) => {
+exports.getTasks = async (_, { progress }, { req, res }) => {
 
     if (req.user) {
         try {
@@ -15,7 +15,7 @@ exports.getTasks = async ({ progress }, { req, res }) => {
     throw new Error('unathorised');
 }
 
-exports.addTask = async ({ task: { description, date, progress } }, { req, res }) => {
+exports.addTask = async (_, { task: { description, date, progress } }, { req, res }) => {
 
     if (req.user) {
         try {
@@ -42,7 +42,7 @@ exports.addTask = async ({ task: { description, date, progress } }, { req, res }
     throw new Error('unathorised');
 }
 
-exports.updateTask = async ({ task: { id, description, date, progress } }, { req }) => {
+exports.updateTask = async (_, { task: { id, description, date, progress } }, { req }) => {
 
     console.log(req.user);
     console.log(id);
@@ -64,7 +64,7 @@ exports.updateTask = async ({ task: { id, description, date, progress } }, { req
     throw new Error('unathorised');
 }
 
-exports.deleteTask = async ({ taskId }, { req, res }) => {
+exports.deleteTask = async (_, { taskId }, { req, res }) => {
 
     if (req.user) {
         try {

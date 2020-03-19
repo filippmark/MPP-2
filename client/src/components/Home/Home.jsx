@@ -46,18 +46,19 @@ export default class Home extends Component {
 
             console.log(response);
 
-            this.setState({
-                ...this.state,
-                tasks: response.data.data.getTasks
-            });
-
-
-        } catch (error) {
-            console.log(error.response);
-            if (error.response && error.response.status === 401) {
+            if (response.data.errors) {
                 this.context.setAuthorised(false);
                 this.props.history.push('/sign-in');
+            } else {
+                this.setState({
+                    ...this.state,
+                    tasks: response.data.data.getTasks
+                });
+
             }
+
+        } catch (error) {
+            console.log(error);
         }
 
     }

@@ -24,7 +24,6 @@ exports.schema = `
   
   type Query {
     getTasks(progress: [String!]!): [Task!]!
-    signIn (email: String!, password: String!): String
   }
 
   type Mutation {
@@ -36,12 +35,14 @@ exports.schema = `
 `
 
 exports.resolvers = {
-  getTasks: taskControllers.getTasks,
-  signIn: userControllers.checkForUserExistence,
-  signUp: userControllers.createNewUser,
-  createTask: taskControllers.addTask,
-  updateTask: taskControllers.updateTask,
-  deleteTask: taskControllers.deleteTask
-
+  Query: {
+    getTasks: taskControllers.getTasks,
+  },
+  Mutation: {
+    signUp: userControllers.createNewUser,
+    createTask: taskControllers.addTask,
+    updateTask: taskControllers.updateTask,
+    deleteTask: taskControllers.deleteTask
+  }
 }
 

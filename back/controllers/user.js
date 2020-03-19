@@ -2,7 +2,7 @@ const User = require('../models/user');
 const validator = require('validator');
 const jwtHelpers = require('../helpers/jwtHelpers');
 
-exports.createNewUser = async ({ email, password }) => {
+exports.createNewUser = async (_, { email, password }) => {
 
     console.log(email);
 
@@ -35,36 +35,32 @@ exports.createNewUser = async ({ email, password }) => {
 
 }
 
-exports.checkForUserExistence = async ({ email, password }, { req, res }) => {
+exports.checkForUserExistence = async (req, res) => {
 
-    console.log(email);
+    const { email, password } = req.body;
 
     try {
 
         const user = await User.findOne({ email });
 
-
-
         if (user) {
 
             user.validPassword(password, (err, result) => {
-                if (err) {
-                    throw new Error('Incorrect password');
-                } else {
-                    console.log('oke');
+                if (result) {
                     jwtHelpers.createToken(res, { email, id: user._id });
-                    console.log(res);
-                    return;
+                    res.status(200).send();
+
+                } else {
+                    res.status(500).send('Incorrect password');
                 }
             })
 
         } else {
-            throw new Error('There are no such user.');
+            res.status(500).send('There are no such user.');
         }
 
     } catch (error) {
-        console.log('kek');
         console.log(error);
-        throw error;
+        res.status(500).send();
     }
 }

@@ -5,6 +5,7 @@ import { Col, Button, Form, FormGroup, Label, Input, FormText, FormFeedback } fr
 import { isEmail } from 'validator';
 import * as PasswordValidator from 'password-validator';
 import './SignUp.css';
+import { graphqlEndpoint } from '../../App';
 
 export default class SignIn extends React.Component {
 
@@ -13,8 +14,7 @@ export default class SignIn extends React.Component {
         password: '',
         password2: '',
         schema: null,
-        signUpError: false,
-        signUpErrorMsg: ''
+        signUpError: '',
     }
 
     componentDidMount() {
@@ -49,22 +49,29 @@ export default class SignIn extends React.Component {
         event.preventDefault();
 
         try {
-            let response = await axios.post('http://localhost:8080/signUp', {
-                email: this.state.email,
-                password: this.state.password
-            })
+            let response = await axios.post(graphqlEndpoint, {
+                query: `
+                        mutation{
+                            signUp(email:"${this.state.email}", password:"${this.state.password}")
+                        }
+                    `
+            });
 
             console.log(response);
 
-            this.props.history.push('/sign-in');
+            debugger;
+
+            if (response.data.errors) {
+                this.setState({
+                    ...this.state,
+                    signUpError: response.data.errors[0].message,
+                })
+            } else {
+                this.props.history.push('/sign-in');
+            }
 
         } catch (error) {
-            console.log(error.response.data);
-            this.setState({
-                ...this.state,
-                signUpError: true,
-                signUpErrorMsg: error.response.data
-            })
+            console.log(error);
         }
     }
 
@@ -96,7 +103,7 @@ export default class SignIn extends React.Component {
                     </FormGroup>
                     <Button color="secondary" size="md" disabled={isEmailInvalid || isPasswordInvalid || isPasswordsAreDifferent} onClick={this._handleSignUp}> Sign up </Button>
                 </Form>
-
+                {this.state.signUpError && (<div className="error-block"> {this.state.signUpError} </div>)}
             </div>
         )
     }
