@@ -63,6 +63,7 @@ export default class SignIn extends React.Component {
 
         } catch (error) {
             console.log(error);
+            this.setState({ signInError: error.response.data })
             this.context.setAuthorised(false);
         }
     }
@@ -88,6 +89,7 @@ export default class SignIn extends React.Component {
                     </FormGroup>
                     <Button color="secondary" size="md" disabled={isEmailInvalid || isPasswordInvalid} onClick={this._handleSignIn}> Sign in </Button>
                 </Form>
+                {this.state.signInError && (<div className="error-block"> {this.state.signInError} </div>)}
             </div>
         )
     }

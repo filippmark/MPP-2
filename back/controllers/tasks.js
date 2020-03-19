@@ -5,7 +5,7 @@ exports.getTasks = async (req, res, next) => {
     const { progress } = req.query;
 
     try {
-        let tasks = await Task.find({ progress: { $in: progress.split(',') } });
+        let tasks = await Task.find({ userId: req.user.id, progress: { $in: progress.split(',') } });
 
         return res.status(200).send(tasks);
 

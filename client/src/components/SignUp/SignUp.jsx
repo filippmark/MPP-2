@@ -62,8 +62,7 @@ export default class SignIn extends React.Component {
             console.log(error.response.data);
             this.setState({
                 ...this.state,
-                signUpError: true,
-                signUpErrorMsg: error.response.data
+                signUpError: error.response.data,
             })
         }
     }
@@ -96,7 +95,7 @@ export default class SignIn extends React.Component {
                     </FormGroup>
                     <Button color="secondary" size="md" disabled={isEmailInvalid || isPasswordInvalid || isPasswordsAreDifferent} onClick={this._handleSignUp}> Sign up </Button>
                 </Form>
-
+                {this.state.signUpError && (<div className="error-block"> {this.state.signUpError} </div>)}
             </div>
         )
     }

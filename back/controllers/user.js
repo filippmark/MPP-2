@@ -46,10 +46,10 @@ exports.checkForUserExistence = async (req, res, next) => {
         if (user) {
 
             user.validPassword(password, (err, result) => {
-                if (err) {
-                    return res.status(401).send('Incorrect password');
-                } else {
+                if (result) {
                     jwtHelpers.createToken(res, { email, id: user._id });
+                } else {
+                    return res.status(401).send('Incorrect password');
                 }
             })
 
