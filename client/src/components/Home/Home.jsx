@@ -119,6 +119,8 @@ export default class Home extends Component {
                 }, { withCredentials: true });
             }
 
+            this._getTasks(Object.values(this.state.filters).filter((filter) => { return filter.checked }).map(filter => filter.name));
+
         } catch (error) {
             console.log(error);
         }
