@@ -1,80 +1,103 @@
 const Task = require('../models/task');
+const {isValidToken} = require('../helpers/jwtHelpers');
+const {getTasks, postTask,  updateTask, deleteTask} = require('../event-constants');
 
-exports.getTasks = async (req, res, next) => {
+exports.getTasks = async (socket, data) => {
 
-    const { progress } = req.query;
+    const { progress, token } = data;
 
-    try {
-        let tasks = await Task.find({ userId: req.user.id, progress: { $in: progress.split(',') } });
+    const userId = isValidToken(token);
 
-        return res.status(200).send(tasks);
-
-    } catch (err) {
-        return res.status(500).send();
+    if(userId){
+        try {
+            let tasks = await Task.find({ userId: req.user.id, progress: { $in: progress.split(',') } });
+    
+            socket.emit(getTasks, {tasks});
+    
+        } catch (err) {
+            console.log(err);
+            socket.emit(getTasks, {error: 'Server error'});
+        }
     }
+
+    socket.emit(getTasks, {error: 'Unauthorised'});
+    
+}
+
+exports.addTask = async (socket, data) => {
+    const { description, date, file, progress, token } = data;
+
+    const userId = isValidToken(token);
+    
+    if(userId){
+        try {
+
+            let task = new Task({
+                description,
+                date,
+                file,
+                progress,
+                userId: req.user.id
+            });
+    
+            task = await task.save();
+    
+            socket.emit(deleteTask, {task});
+    
+        } catch (err) {
+            console.log(err);
+            socket.emit(postTask, {error: 'Server error'});
+        }
+    }
+
+    socket.emit(getTasks, {error: 'Unauthorised'});
 
 }
 
-exports.addTask = async (req, res, next) => {
-    const { description, date, file, progress } = req.body;
+exports.updateTask = async (socket, data) => {
 
-    try {
+    const { taskId, description, date, file, progress, token } = data;
 
-        let task = new Task({
-            description,
-            date,
-            file,
-            progress,
-            userId: req.user.id
-        });
+    const userId = isValidToken(token);
+    
+    if(userId){
+        try {
 
-        task = await task.save();
+            const updatedTask = await Task.updateOne({ _id: taskId }, { $set: { description, date, file, progress } });
 
-        return res.status(200).send(task);
+            socket.emit(deleteTask, updatedTask);
 
-    } catch (err) {
-        console.log(err);
-        return res.status(500).send();
+        } catch (err) {
+            console.log(err);
+            socket.emit(updateTask, {error: 'Server error'});
+        }
     }
 
+    socket.emit(getTasks, {error: 'Unauthorised'});
+    
 }
 
-exports.updateTask = async (req, res) => {
+exports.deleteTask = async (socket, data) => {
 
-    const { taskId } = req.params;
-    const { description, date, file, progress } = req.body;
+    const { taskId, token } = data;
 
-    try {
+    const userId = isValidToken(token);
+    
+    if(userId){
+        try {
 
-        const updatedTask = await Task.updateOne({ _id: taskId }, { $set: { description, date, file, progress } });
-
-        res.status(200).send(updatedTask);
-
-    } catch (err) {
-        console.log(err);
-        return res.status(500).send();
+            const result = await Task.findByIdAndDelete(taskId);
+    
+            console.log(result);
+    
+            socket.emit(deleteTask, {msg: 'successfully'});
+    
+        } catch (error) {
+            console.log(err);
+            socket.emit(deleteTask, {error: 'Server error'});
+        }
     }
-}
 
-exports.deleteTask = async (req, res) => {
-
-    console.log(req.params);
-
-    const { taskId } = req.params;
-
-    try {
-
-        console.log("deletion");
-
-        const result = await Task.findByIdAndDelete(taskId);
-
-        console.log(result);
-
-        res.status(200).send();
-
-    } catch (error) {
-        console.log(error);
-        return res.status(500).send();
-    }
+    socket.emit(getTasks, {error: 'Unauthorised'});
 
 }

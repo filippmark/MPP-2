@@ -6,6 +6,7 @@ import './SignIn.css';
 import { isEmail } from 'validator';
 import * as PasswordValidator from 'password-validator';
 import { AuthContext } from '../../context';
+import openSocket from 'socket.io-client';
 
 export default class SignIn extends React.Component {
 

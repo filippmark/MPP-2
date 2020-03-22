@@ -5,6 +5,9 @@ import moment from 'moment';
 import axios from 'axios';
 import { AuthContext } from '../../context';
 import { Redirect } from 'react-router-dom';
+import openSocket from 'socket.io-client';
+import {} from 
+const socket = openSocket('http://localhost:8080');
 
 export default class Home extends Component {
 
@@ -68,18 +71,18 @@ export default class Home extends Component {
 
         tasks.push({
             description: '',
-            date: '',
+            date: new Date().toISOString(),
             filepath: null,
             progress: 'todo',
             isChanged: true,
             isNew: true,
             index
-        })
+        });
 
         this.setState({
             ...this.state,
             tasks
-        })
+        });
 
     }
 

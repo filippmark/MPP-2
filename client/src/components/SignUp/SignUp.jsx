@@ -5,6 +5,9 @@ import { Col, Button, Form, FormGroup, Label, Input, FormText, FormFeedback } fr
 import { isEmail } from 'validator';
 import * as PasswordValidator from 'password-validator';
 import './SignUp.css';
+import openSocket from 'socket.io-client';
+
+const socket = openSocket('http://localhost:8080');
 
 export default class SignIn extends React.Component {
 

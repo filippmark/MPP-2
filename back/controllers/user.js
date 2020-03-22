@@ -1,12 +1,12 @@
 const User = require('../models/user');
 const validator = require('validator');
 const jwtHelpers = require('../helpers/jwtHelpers');
+const {signIn, signUp} = require('../event-constants');
 
-exports.createNewUser = async (req, res, next) => {
 
-    console.log(req.body);
+exports.createNewUser = async (socket, data) => {
 
-    const { email, password } = req.body;
+    const { email, password } = data;
 
     try {
 
@@ -20,22 +20,24 @@ exports.createNewUser = async (req, res, next) => {
 
                 await newUser.save();
 
-                res.sendStatus(200);
+                socket.emit(signUp, { msg: 'successfully'}); 
+
             } else {
-                res.status(500).send('This email is busy');
+                socket.emit(signUp, { error: 'This email is busy'});
             }
 
         } else {
-            res.status(500).send('Please, use another email.');
+            socket.emit(signUp, { error: 'Please, use another email.'});
         }
 
     } catch (err) {
         console.log(err);
+        socket.emit(signUp, { error: 'Server error'});
     }
 
 }
 
-exports.checkForUserExistence = async (req, res, next) => {
+exports.checkForUserExistence = async (socket, data) => {
 
     const { email, password } = req.body;
 
@@ -47,18 +49,19 @@ exports.checkForUserExistence = async (req, res, next) => {
 
             user.validPassword(password, (err, result) => {
                 if (result) {
-                    jwtHelpers.createToken(res, { email, id: user._id });
+                    const token = jwtHelpers.createToken(res, { email, id: user._id });
+                    socket.emit(signIn, {token});
                 } else {
-                    return res.status(401).send('Incorrect password');
+                    socket.emit(signIn, { error: 'Incorrect password'});
                 }
             })
 
         } else {
-            res.status(401).send('There are no such user.');
+            socket.emit(signIn, { error: 'There are no such user.'});
         }
 
     } catch (error) {
         console.log(error);
-        res.status(500).send(error);
+        socket.emit(signIn, { error: 'Server error'});
     }
 }
