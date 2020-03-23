@@ -29,7 +29,7 @@ export default class Home extends Component {
 
             this.setState({
                 ...this.state,
-                tasks: response.data
+                tasks: response.data.map((task) => ({...task, index: task._id}))
             });
 
 
