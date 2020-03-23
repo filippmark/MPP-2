@@ -1,11 +1,10 @@
 import * as React from 'react';
-import axios from 'axios';
-import { Redirect } from 'react-router';
-import { Col, Button, Form, FormGroup, Label, Input, FormText, FormFeedback } from 'reactstrap';
+import { Col, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import { isEmail } from 'validator';
 import * as PasswordValidator from 'password-validator';
 import './SignUp.css';
 import openSocket from 'socket.io-client';
+import { signUp } from '../../socketEvents';
 
 const socket = openSocket('http://localhost:8080');
 
@@ -36,11 +35,24 @@ export default class SignIn extends React.Component {
         this.setState({
             ...this.state,
             schema
+        });
+
+        socket.on(signUp, (data) => {
+            if(data.error){
+                this.setState({
+                    ...this.state,
+                    signUpError: data.error,
+                })
+            }else{
+                this.props.history.push('/sign-in');
+            }
         })
     }
 
 
-
+    componentWillUnmount(){
+        socket.close();
+    }
 
     _handleChange = (event) => {
         this.setState({
@@ -52,21 +64,14 @@ export default class SignIn extends React.Component {
         event.preventDefault();
 
         try {
-            let response = await axios.post('http://localhost:8080/signUp', {
+
+            socket.emit(signUp, {
                 email: this.state.email,
                 password: this.state.password
-            })
-
-            console.log(response);
-
-            this.props.history.push('/sign-in');
+            });
 
         } catch (error) {
-            console.log(error.response.data);
-            this.setState({
-                ...this.state,
-                signUpError: error.response.data,
-            })
+            console.log(error);
         }
     }
 

@@ -10,7 +10,7 @@ exports.getTasks = async (socket, data) => {
 
     if(userId){
         try {
-            let tasks = await Task.find({ userId: req.user.id, progress: { $in: progress.split(',') } });
+            let tasks = await Task.find({ userId: req.user.id, progress: { $in: progress } });
     
             socket.emit(getTasks, {tasks});
     
@@ -25,7 +25,7 @@ exports.getTasks = async (socket, data) => {
 }
 
 exports.addTask = async (socket, data) => {
-    const { description, date, file, progress, token } = data;
+    const { description, date, file, progress, token, index } = data;
 
     const userId = isValidToken(token);
     
@@ -42,7 +42,7 @@ exports.addTask = async (socket, data) => {
     
             task = await task.save();
     
-            socket.emit(deleteTask, {task});
+            socket.emit(postTask, {...task, index});
     
         } catch (err) {
             console.log(err);
@@ -50,7 +50,7 @@ exports.addTask = async (socket, data) => {
         }
     }
 
-    socket.emit(getTasks, {error: 'Unauthorised'});
+    socket.emit(postTask, {error: 'Unauthorised'});
 
 }
 
@@ -65,7 +65,7 @@ exports.updateTask = async (socket, data) => {
 
             const updatedTask = await Task.updateOne({ _id: taskId }, { $set: { description, date, file, progress } });
 
-            socket.emit(deleteTask, updatedTask);
+            socket.emit(updateTask, {...updatedTask, taskId});
 
         } catch (err) {
             console.log(err);
@@ -73,7 +73,7 @@ exports.updateTask = async (socket, data) => {
         }
     }
 
-    socket.emit(getTasks, {error: 'Unauthorised'});
+    socket.emit(updateTask, {error: 'Unauthorised'});
     
 }
 
@@ -98,6 +98,6 @@ exports.deleteTask = async (socket, data) => {
         }
     }
 
-    socket.emit(getTasks, {error: 'Unauthorised'});
+    socket.emit(deleteTask, {error: 'Unauthorised'});
 
 }

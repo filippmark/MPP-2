@@ -11,7 +11,16 @@ import './App.css';
 class App extends Component {
 
   state = {
-    isAuthorised: true
+    isAuthorised: true,
+    jwt: null
+  }
+
+  componentDidMount(){
+    const jwt = localStorage.getItem('jwt');
+
+    if(jwt){
+      this.setState({isAuthorised: true, jwt})
+    }
   }
 
   setAuthorised = (isAuthorised) => {
@@ -20,11 +29,18 @@ class App extends Component {
     });
   }
 
+  setJwt = (jwt) => {
+    this.setState({
+      ...this.state,
+      jwt
+    });
+  }
+
   render() {
     return (
       <Router>
         <div className="App">
-          <AuthContext.Provider value={{ isAuthorised: this.state.isAuthorised, setAuthorised: this.setAuthorised }}>
+          <AuthContext.Provider value={{ jwt: this.state.jwt, isAuthorised: this.state.isAuthorised, setAuthorised: this.setAuthorised, setJWT:  this.setJwt}}>
             <Navbar></Navbar>
             <Switch>
               <Route exact path="/" render={props => <Home {...props}></Home>} />

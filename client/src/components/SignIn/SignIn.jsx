@@ -1,12 +1,13 @@
 import * as React from 'react';
-import axios from 'axios';
-import { Redirect } from 'react-router';
 import { Col, Button, Form, FormGroup, Label, Input, FormText } from 'reactstrap';
 import './SignIn.css';
 import { isEmail } from 'validator';
 import * as PasswordValidator from 'password-validator';
 import { AuthContext } from '../../context';
 import openSocket from 'socket.io-client';
+import { signIn } from '../../socketEvents';
+
+const socket = openSocket('http://localhost:8080');
 
 export default class SignIn extends React.Component {
 
@@ -35,11 +36,28 @@ export default class SignIn extends React.Component {
         this.setState({
             ...this.state,
             schema
+        });
+
+        socket.on(signIn, (data) => {
+
+            if(data.error){
+                this.setState({ signInError: data.error });
+                this.context.setAuthorised(false);
+            }else{
+                console.log(data);
+                localStorage.setItem('jwt', data.token);
+                this.context.setJwt(data.token);
+                this.context.setAuthorised(true);
+                this.props.history.push('/');
+            }            
+
         })
+
     }
 
-
-
+    componentWillUnmount(){
+        socket.close();
+    }
 
     _handleChange = (event) => {
         this.setState({
@@ -51,21 +69,9 @@ export default class SignIn extends React.Component {
         event.preventDefault();
 
         try {
-
-            const response = await axios.post('http://localhost:8080/signIn', {
-                email: this.state.email,
-                password: this.state.password
-            }, { withCredentials: true });
-
-            console.log(response);
-            this.context.setAuthorised(true);
-
-            this.props.history.push('/');
-
+            socket.emit(signIn, {email: this.state.email, password: this.state.password});
         } catch (error) {
             console.log(error);
-            this.setState({ signInError: error.response.data })
-            this.context.setAuthorised(false);
         }
     }
 

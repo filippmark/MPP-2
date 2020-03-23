@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import Task from './Task/Task';
 import './Home.css';
 import moment from 'moment';
-import axios from 'axios';
 import { AuthContext } from '../../context';
 import { Redirect } from 'react-router-dom';
 import openSocket from 'socket.io-client';
-import {} from 
+import { updateTask, deleteTask, getTasks,  postTask} from '../../socketEvents';
+
 const socket = openSocket('http://localhost:8080');
 
 export default class Home extends Component {
@@ -24,24 +24,72 @@ export default class Home extends Component {
 
     componentDidMount() {
         this._getTasks(['todo', 'in progress', 'ready']);
+
+
+        socket.on(getTasks, (data) => {
+            if(data.error){
+                console.log(data);
+                if (data.error === 'Unauthorised') {
+                    this.context.setAuthorised(false);
+                    this.props.history.push('/sign-in');
+                }
+            }else{
+                console.log(data);
+                this.setState({
+                    ...this.state,
+                    tasks: data.tasks
+                });
+            }
+
+        });
+
+        socket.on(deleteTask, (data) => {
+            console.log(data);
+        });
+
+
+        socket.on(postTask, (data) => {
+            if(data.error){
+                console.log(data);
+            }else{
+                const {index, _id} = data;
+                console.log(data);
+                const tasks = [...this.state.tasks];
+
+                const deleteStartIndex = tasks.findIndex((value) => { return value.index === index});
+
+                tasks.splice(deleteStartIndex, 1);
+
+                tasks.splice(deleteStartIndex, 0, {
+                    ...task,
+                    _id,
+                    isNew: false,
+                    isChanged: false
+                });
+
+                this.setState({
+                    ...this.state,
+                    tasks
+                });
+            }
+        });
+
+        socket.on(updateTask, (data) => {
+            console.log(data);
+        });
     }
 
-    _getTasks = async (states) => {
+    componentWillUnmount(){
+        socket.close();
+    }
+
+    _getTasks = async (progress) => {
         try {
-            const response = await axios.get(`http://localhost:8080/tasks?progress=${states.join(',')}`, { withCredentials: true });
 
-            this.setState({
-                ...this.state,
-                tasks: response.data
-            });
-
+            socket.emit(getTasks, {progress, token: this.context.jwt});
 
         } catch (error) {
-            console.log(error.response);
-            if (error.response.status === 401) {
-                this.context.setAuthorised(false);
-                this.props.history.push('/sign-in');
-            }
+            console.log(error);
         }
 
     }
@@ -91,35 +139,10 @@ export default class Home extends Component {
 
         try {
 
-            let response;
-
             if (task.isNew) {
-                response = await axios.post("http://localhost:8080/tasks", {
-                    ...task
-                }, { withCredentials: true });
-
-                const tasks = [...this.state.tasks];
-
-                const deleteStartIndex = tasks.findIndex((value) => { return value.index === task.index });
-
-                tasks.splice(deleteStartIndex, 1);
-
-                tasks.splice(deleteStartIndex, 0, {
-                    ...task,
-                    _id: response.data._id,
-                    isNew: false,
-                    isChanged: false
-                });
-
-                this.setState({
-                    ...this.state,
-                    tasks
-                });
-
+                socket.emit(postTask, {...task, token: this.context.jwt});
             } else {
-                response = await axios.put(`http://localhost:8080/tasks/${task._id ? task._id : task.index}`, {
-                    ...task
-                }, { withCredentials: true });
+                socket.emit(updateTask, {...task, taskId: task._id ? task._id : task.index});
             }
 
             this._getTasks(Object.values(this.state.filters).filter((filter) => { return filter.checked }).map(filter => filter.name));
@@ -132,16 +155,13 @@ export default class Home extends Component {
     _deleteTask = async (task) => {
 
         try {
-
-            let response;
-
             const tasks = [...this.state.tasks];
 
             tasks.splice(tasks.findIndex((value) => { return value.index === task.index }), 1);
 
 
             if (!task.isNew) {
-                response = await axios.delete(`http://localhost:8080/tasks/${task._id ? task._id : task.index}`, { withCredentials: true });
+                socket.emit(deleteTask, { taskId: task._id ? task._id : task.index, token: this.context.jwt });
             }
 
             this.setState({
