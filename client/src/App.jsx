@@ -7,6 +7,10 @@ import SignUp from './components/SignUp/SignUp';
 import Navbar from './components/Global/Navbar/Navbar';
 import { AuthContext } from './context';
 import './App.css';
+import openSocket from 'socket.io-client';
+
+export const socket = openSocket('ws://localhost:8080', {transports: ['websocket']});
+
 
 class App extends Component {
 
@@ -18,9 +22,15 @@ class App extends Component {
   componentDidMount(){
     const jwt = localStorage.getItem('jwt');
 
+    console.log(jwt);
+
     if(jwt){
       this.setState({isAuthorised: true, jwt})
     }
+  }
+
+  componentWillUnmount(){
+    socket.close();
   }
 
   setAuthorised = (isAuthorised) => {

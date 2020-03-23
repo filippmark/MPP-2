@@ -4,10 +4,8 @@ import './SignIn.css';
 import { isEmail } from 'validator';
 import * as PasswordValidator from 'password-validator';
 import { AuthContext } from '../../context';
-import openSocket from 'socket.io-client';
 import { signIn } from '../../socketEvents';
-
-const socket = openSocket('http://localhost:8080');
+import {socket} from '../../App';
 
 export default class SignIn extends React.Component {
 
@@ -45,18 +43,15 @@ export default class SignIn extends React.Component {
                 this.context.setAuthorised(false);
             }else{
                 console.log(data);
+                console.log(this.context);
                 localStorage.setItem('jwt', data.token);
-                this.context.setJwt(data.token);
+                this.context.setJWT(data.token);
                 this.context.setAuthorised(true);
                 this.props.history.push('/');
             }            
 
         })
 
-    }
-
-    componentWillUnmount(){
-        socket.close();
     }
 
     _handleChange = (event) => {

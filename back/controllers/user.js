@@ -6,6 +6,8 @@ const {signIn, signUp} = require('../event-constants');
 
 exports.createNewUser = async (socket, data) => {
 
+    console.log(data);
+
     const { email, password } = data;
 
     try {
@@ -20,26 +22,28 @@ exports.createNewUser = async (socket, data) => {
 
                 await newUser.save();
 
-                socket.emit(signUp, { msg: 'successfully'}); 
+                return socket.emit(signUp, { msg: 'successfully'}); 
 
             } else {
-                socket.emit(signUp, { error: 'This email is busy'});
+                return socket.emit(signUp, { error: 'This email is busy'});
             }
 
         } else {
-            socket.emit(signUp, { error: 'Please, use another email.'});
+            return socket.emit(signUp, { error: 'Please, use another email.'});
         }
 
     } catch (err) {
         console.log(err);
-        socket.emit(signUp, { error: 'Server error'});
+        return socket.emit(signUp, { error: 'Server error'});
     }
 
 }
 
 exports.checkForUserExistence = async (socket, data) => {
 
-    const { email, password } = req.body;
+    console.log(data);
+
+    const { email, password } = data;
 
     try {
 
@@ -49,19 +53,19 @@ exports.checkForUserExistence = async (socket, data) => {
 
             user.validPassword(password, (err, result) => {
                 if (result) {
-                    const token = jwtHelpers.createToken(res, { email, id: user._id });
-                    socket.emit(signIn, {token});
+                    const token = jwtHelpers.createToken({ email, id: user._id });
+                    return socket.emit(signIn, {token});
                 } else {
-                    socket.emit(signIn, { error: 'Incorrect password'});
+                    return socket.emit(signIn, { error: 'Incorrect password'});
                 }
             })
 
         } else {
-            socket.emit(signIn, { error: 'There are no such user.'});
+            return socket.emit(signIn, { error: 'There are no such user.'});
         }
 
     } catch (error) {
         console.log(error);
-        socket.emit(signIn, { error: 'Server error'});
+        return socket.emit(signIn, { error: 'Server error'});
     }
 }

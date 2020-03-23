@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-exports.createToken = async (res, body) => {
+exports.createToken = (body) => {
 
     let token = null;
     const lifeTime = 3600 * 24 * 1000;
@@ -22,12 +22,12 @@ exports.removeToken = (req, res, next) => {
     res.clearCookie('token').send();
 }
 
-exports.isValidToken = async (token) => {
+exports.isValidToken = (token) => {
     try {
         if (!token) {
             return false;
         }
-        const decrypt = await jwt.verify(token, process.env.JWT_SECRET);
+        const decrypt = jwt.verify(token, process.env.JWT_SECRET);
         
         return decrypt.id;
     } catch (err) {

@@ -4,10 +4,8 @@ import './Home.css';
 import moment from 'moment';
 import { AuthContext } from '../../context';
 import { Redirect } from 'react-router-dom';
-import openSocket from 'socket.io-client';
 import { updateTask, deleteTask, getTasks,  postTask} from '../../socketEvents';
-
-const socket = openSocket('http://localhost:8080');
+import {socket} from '../../App';
 
 export default class Home extends Component {
 
@@ -37,7 +35,7 @@ export default class Home extends Component {
                 console.log(data);
                 this.setState({
                     ...this.state,
-                    tasks: data.tasks
+                    tasks: data.tasks.map((task) => ({...task, index: task._id}))
                 });
             }
 
@@ -61,7 +59,7 @@ export default class Home extends Component {
                 tasks.splice(deleteStartIndex, 1);
 
                 tasks.splice(deleteStartIndex, 0, {
-                    ...task,
+                    ...data,
                     _id,
                     isNew: false,
                     isChanged: false
@@ -79,12 +77,10 @@ export default class Home extends Component {
         });
     }
 
-    componentWillUnmount(){
-        socket.close();
-    }
-
     _getTasks = async (progress) => {
         try {
+
+            console.log(this.context);
 
             socket.emit(getTasks, {progress, token: this.context.jwt});
 
@@ -142,7 +138,7 @@ export default class Home extends Component {
             if (task.isNew) {
                 socket.emit(postTask, {...task, token: this.context.jwt});
             } else {
-                socket.emit(updateTask, {...task, taskId: task._id ? task._id : task.index});
+                socket.emit(updateTask, {...task, taskId: task._id ? task._id : task.index, token: this.context.jwt});
             }
 
             this._getTasks(Object.values(this.state.filters).filter((filter) => { return filter.checked }).map(filter => filter.name));
@@ -157,7 +153,7 @@ export default class Home extends Component {
         try {
             const tasks = [...this.state.tasks];
 
-            tasks.splice(tasks.findIndex((value) => { return value.index === task.index }), 1);
+            console.log(tasks.splice(tasks.findIndex((value) => { return value.index === task.index }), 1));
 
 
             if (!task.isNew) {

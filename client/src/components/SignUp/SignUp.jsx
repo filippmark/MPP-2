@@ -3,10 +3,8 @@ import { Col, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import { isEmail } from 'validator';
 import * as PasswordValidator from 'password-validator';
 import './SignUp.css';
-import openSocket from 'socket.io-client';
 import { signUp } from '../../socketEvents';
-
-const socket = openSocket('http://localhost:8080');
+import {socket} from '../../App';
 
 export default class SignIn extends React.Component {
 
@@ -49,10 +47,6 @@ export default class SignIn extends React.Component {
         })
     }
 
-
-    componentWillUnmount(){
-        socket.close();
-    }
 
     _handleChange = (event) => {
         this.setState({

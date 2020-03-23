@@ -70,9 +70,7 @@ class Task extends Component {
     render() {
 
         const { description, date, filepath, progress } = this.state;
-
-        console.log(this.state.date);
-
+        
         return (
             <div className="TaskWrapper">
                 <ul className={`Task shadow`}>

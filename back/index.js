@@ -21,7 +21,7 @@ app.use(bodyParser.json());
 
 app.get("/", (req, res) => {
     res.send("vse chetka");
-})
+});
 
 
 const server = http.Server(app);
@@ -30,5 +30,6 @@ server.listen(8080, '127.0.0.1');
 const io = socketIo(server);
 
 io.on('connection', (socket) => {
+    console.log('connected');
     setUpEventsHandlers(socket);
 });
