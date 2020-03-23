@@ -48,8 +48,10 @@ exports.addTask = async (socket, data) => {
             });
     
             task = await task.save();
+
+            console.log(task._doc);
     
-            return socket.emit(postTask, {...task, index});
+            return socket.emit(postTask, {...task._doc, index});
     
         } catch (err) {
             console.log(err);

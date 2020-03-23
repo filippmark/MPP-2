@@ -11,37 +11,28 @@ import openSocket from 'socket.io-client';
 
 export const socket = openSocket('ws://localhost:8080', {transports: ['websocket']});
 
-
 class App extends Component {
 
-  state = {
-    isAuthorised: true,
-    jwt: null
-  }
 
-  componentDidMount(){
+  constructor(props) {
+    super(props);
+
     const jwt = localStorage.getItem('jwt');
 
-    console.log(jwt);
 
-    if(jwt){
-      this.setState({isAuthorised: true, jwt})
-    }
+    this.state = {
+      isAuthorised: !!jwt,
+      jwt
+    };
   }
 
   componentWillUnmount(){
     socket.close();
   }
 
-  setAuthorised = (isAuthorised) => {
+  setAuthorised = (isAuthorised, jwt) => {
     this.setState({
-      isAuthorised
-    });
-  }
-
-  setJwt = (jwt) => {
-    this.setState({
-      ...this.state,
+      isAuthorised,
       jwt
     });
   }

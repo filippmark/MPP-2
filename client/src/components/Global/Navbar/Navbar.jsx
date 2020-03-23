@@ -25,8 +25,7 @@ export default class Navmenu extends React.PureComponent {
         console.log(this.context);
 
         localStorage.removeItem('jwt');
-        this.context.setJWT(null);
-        this.context.setAuthorised(false);
+        this.context.setAuthorised(false, null);
     }
 
     render() {

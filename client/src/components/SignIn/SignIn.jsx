@@ -42,11 +42,9 @@ export default class SignIn extends React.Component {
                 this.setState({ signInError: data.error });
                 this.context.setAuthorised(false);
             }else{
-                console.log(data);
                 console.log(this.context);
                 localStorage.setItem('jwt', data.token);
-                this.context.setJWT(data.token);
-                this.context.setAuthorised(true);
+                this.context.setAuthorised(true, data.token);
                 this.props.history.push('/');
             }            
 

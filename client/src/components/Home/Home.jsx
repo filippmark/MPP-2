@@ -21,7 +21,9 @@ export default class Home extends Component {
     }
 
     componentDidMount() {
+        
         this._getTasks(['todo', 'in progress', 'ready']);
+        
 
 
         socket.on(getTasks, (data) => {
