@@ -1,35 +1,43 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-require("../node_modules/dotenv").config();
+const { Sequelize } = require("sequelize");
+const { DataTypes } = require("sequelize");
+const user = require('./user');
 
-mongoose.connect(process.env.DB_ADDRESS, { useNewUrlParser: true, useUnifiedTopology: true, dbName: "MPP2" })
-    .catch(error => {
-        console.log(error);
-    });
-mongoose.set('useCreateIndex', true);
-mongoose.set("useFindAndModify", true);
+const sequelize = new Sequelize("mydb", "root", "1201", {
+  dialect: "mysql",
+  host: "127.0.0.1",
+  port: 3306,
+});
 
-let taskScheme = new Schema({
-
-    description: {
-        type: String,
-        required: true
-    },
-    date: {
-        type: String,
-        default: null
-    },
-    filepath: {
-        type: String,
-        default: null
-    },
-    progress: {
-        type: String
-    },
-    userId: {
-        type: Schema.Types.ObjectId,
-        ref: 'user',
+const task = sequelize.define("task", {
+  id: {
+    type: DataTypes.INTEGER.UNSIGNED,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  description: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  date: {
+    type: DataTypes.STRING,
+    defaultValue: null,
+  },
+  progress: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  userId: {
+    type: DataTypes.INTEGER.UNSIGNED,
+    references: {
+        model: user,
+        key: 'id'
     }
-})
+  },
+});
 
-module.exports = mongoose.model("taskWithUserId", taskScheme)
+(async () => {
+    await task.sync();
+})()
+  
+
+module.exports = task;

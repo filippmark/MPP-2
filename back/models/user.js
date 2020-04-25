@@ -1,48 +1,53 @@
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
-const bcrypt = require("../node_modules/bcrypt/bcrypt");
-require("../node_modules/dotenv").config();
+const { Model, DataTypes } = require("sequelize");
+const { Sequelize } = require("sequelize");
+const bcrypt = require('bcrypt');
 
-mongoose.connect(process.env.DB_ADDRESS, { useNewUrlParser: true, useUnifiedTopology: true, dbName: "MPP2" })
-  .catch(error => {
-    console.log(error);
-  });
-mongoose.set("useCreateIndex", true);
-mongoose.set("useFindAndModify", true);
-
-const userScheme = new Schema({
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  password: {
-    type: String,
-    required: true
-  }
+const sequelize = new Sequelize("mydb", "root", "1201", {
+  dialect: "mysql",
+  host: "127.0.0.1",
+  port: 3306,
 });
 
-userScheme.pre("save", function (next) {
-  if (this.isNew) {
-    const user = this;
-    bcrypt.hash(user.password, 10, function (err, hash) {
-      if (err) {
-        next(err);
-      } else {
-        user.password = hash;
-        next();
-      }
+class User extends Model {
+  validPassword(password, cb) {
+    bcrypt.compare(password, this.password, (err, res) => {
+      if (err) return cb(err, false);
+      return cb(null, res);
     });
-  } else {
-    next();
   }
-});
+}
 
-userScheme.methods.validPassword = function validPassword(password, cb) {
-  bcrypt.compare(password, this.password, (err, res) => {
-    if (err) return cb(err, false);
-    return cb(null, res);
-  });
-};
+User.init(
+  {
+    id: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    email: {
+      type: new DataTypes.STRING(255),
+      allowNull: false,
+      unique: true
+    },
+    password: {
+      type: new DataTypes.STRING(255),
+      allowNull: true,
+    },
+  },
+  {
+    hooks: {
+      beforeCreate: async (user) => {
+        user.password = await bcrypt.hash(user.password, 10);
+      },
+    },
+    tableName: "users",
+    sequelize,
+  }
+);
 
-module.exports = mongoose.model("user", userScheme);
+
+(async () => {
+  await User.sync();
+})()
+
+module.exports = User;

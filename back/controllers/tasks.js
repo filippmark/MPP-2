@@ -1,11 +1,14 @@
 const Task = require('../models/task');
+const { Op } = require("sequelize");
 
 exports.getTasks = async (req, res, next) => {
 
     const { progress } = req.query;
 
     try {
-        let tasks = await Task.find({ userId: req.user.id, progress: { $in: progress.split(',') } });
+        let tasks = await Task.findAll({where: { userId: req.user.id, progress: { [Op.in] : progress.split(',') } }, raw: true});
+
+        console.log(tasks);
 
         return res.status(200).send(tasks);
 
@@ -20,15 +23,13 @@ exports.addTask = async (req, res, next) => {
 
     try {
 
-        let task = new Task({
+        const task =  await Task.create({
             description,
             date,
             file,
             progress,
             userId: req.user.id
         });
-
-        task = await task.save();
 
         return res.status(200).send(task);
 
@@ -46,7 +47,7 @@ exports.updateTask = async (req, res) => {
 
     try {
 
-        const updatedTask = await Task.updateOne({ _id: taskId }, { $set: { description, date, file, progress } });
+        const updatedTask = await Task.update({ description, date, file, progress },{where: { id: taskId }} );
 
         res.status(200).send(updatedTask);
 
@@ -66,7 +67,11 @@ exports.deleteTask = async (req, res) => {
 
         console.log("deletion");
 
-        const result = await Task.findByIdAndDelete(taskId);
+        const result = await Task.destroy({
+            where:{
+                id: taskId
+            }
+        });
 
         console.log(result);
 

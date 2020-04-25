@@ -12,11 +12,12 @@ exports.createNewUser = async (req, res, next) => {
 
         if (validator.isEmail(email)) {
 
-            const userWithSameEmail = await User.findOne({ email });
+            const userWithSameEmail = await User.findAll({where: { email }});
 
-            if (!userWithSameEmail) {
+            
+            if (!userWithSameEmail.length) {
 
-                const newUser = new User({ email, password });
+                const newUser = await User.create({ email, password });
 
                 await newUser.save();
 
@@ -41,13 +42,17 @@ exports.checkForUserExistence = async (req, res, next) => {
 
     try {
 
-        const user = await User.findOne({ email });
+        let user = await User.findAll({where: { email }});
 
-        if (user) {
+        console.log(user);
+
+        if (user.length) {
+
+            user =  User.build(user[0].dataValues);
 
             user.validPassword(password, (err, result) => {
                 if (result) {
-                    jwtHelpers.createToken(res, { email, id: user._id });
+                    jwtHelpers.createToken(res, { email, id: user.id });
                 } else {
                     return res.status(401).send('Incorrect password');
                 }

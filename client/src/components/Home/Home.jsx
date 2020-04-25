@@ -29,7 +29,7 @@ export default class Home extends Component {
 
             this.setState({
                 ...this.state,
-                tasks: response.data.map((task) => ({...task, index: task._id}))
+                tasks: response.data.map((task) => ({...task, index: task.id}))
             });
 
 
@@ -57,7 +57,7 @@ export default class Home extends Component {
         this.setState({
             ...this.state,
             filters
-        })
+        });
     }
 
     _addNewTask = (event) => {
@@ -74,26 +74,34 @@ export default class Home extends Component {
             isChanged: true,
             isNew: true,
             index
-        })
+        });
 
         this.setState({
             ...this.state,
             tasks
-        })
+        });
 
     }
 
 
     _updateTask = async (task) => {
 
-        try {
-
+     
             let response;
 
             if (task.isNew) {
-                response = await axios.post("http://localhost:8080/tasks", {
-                    ...task
-                }, { withCredentials: true });
+
+                try{
+                    response = await axios.post("http://localhost:8080/tasks", {
+                        ...task
+                    }, { withCredentials: true });
+                } catch (error) {
+                    console.log(error.response);
+                    if (error.response.status === 401) {
+                        this.context.setAuthorised(false);
+                        this.props.history.push('/sign-in');
+                    }
+                }
 
                 const tasks = [...this.state.tasks];
 
@@ -103,7 +111,7 @@ export default class Home extends Component {
 
                 tasks.splice(deleteStartIndex, 0, {
                     ...task,
-                    _id: response.data._id,
+                    _id: response.data.id,
                     isNew: false,
                     isChanged: false
                 });
@@ -114,21 +122,24 @@ export default class Home extends Component {
                 });
 
             } else {
-                response = await axios.put(`http://localhost:8080/tasks/${task._id ? task._id : task.index}`, {
-                    ...task
-                }, { withCredentials: true });
+                try{
+                    response = await axios.put(`http://localhost:8080/tasks/${task._id ? task._id : task.index}`, {
+                        ...task
+                    }, { withCredentials: true });
+                } catch (error) {
+                    console.log(error.response);
+                    if (error.response.status === 401) {
+                        this.context.setAuthorised(false);
+                        this.props.history.push('/sign-in');
+                    }
+                }
             }
 
             this._getTasks(Object.values(this.state.filters).filter((filter) => { return filter.checked }).map(filter => filter.name));
 
-        } catch (error) {
-            console.log(error);
-        }
     }
 
     _deleteTask = async (task) => {
-
-        try {
 
             let response;
 
@@ -138,7 +149,15 @@ export default class Home extends Component {
 
 
             if (!task.isNew) {
-                response = await axios.delete(`http://localhost:8080/tasks/${task._id ? task._id : task.index}`, { withCredentials: true });
+                try{
+                    response = await axios.delete(`http://localhost:8080/tasks/${task.id ? task.id : task.index}`, { withCredentials: true });
+                } catch (error) {
+                    console.log(error.response);
+                    if (error.response.status === 401) {
+                        this.context.setAuthorised(false);
+                        this.props.history.push('/sign-in');
+                    }
+                }
             }
 
             this.setState({
@@ -146,9 +165,7 @@ export default class Home extends Component {
                 tasks
             });
 
-        } catch (error) {
-            console.log(error);
-        }
+        
     }
 
     render() {
@@ -184,11 +201,11 @@ export default class Home extends Component {
                     {
                         this.state.tasks.map((task) => {
 
-                            const { description, date, filepath, progress, isChanged, isNew, _id, index } = task;
+                            const { description, date, filepath, progress, isChanged, isNew, id, index } = task;
 
                             return <Task
-                                key={index ? index : _id}
-                                index={_id ? _id : index}
+                                key={index ? index : id}
+                                index={id ? id : index}
                                 description={description}
                                 date={date} filepath={filepath}
                                 progress={progress}
