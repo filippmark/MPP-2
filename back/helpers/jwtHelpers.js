@@ -42,7 +42,7 @@ exports.isValidToken = async (req, res, next) => {
         console.log(req.user);
         next();
     } catch (err) {
-        return res.status(500).json(err.toString());
+        return res.status(401).json(err.toString());
     }
 
 }
