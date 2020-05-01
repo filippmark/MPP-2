@@ -1,226 +1,285 @@
-import React, { Component } from 'react';
-import Task from './Task/Task';
-import './Home.css';
-import moment from 'moment';
-import axios from 'axios';
-import { AuthContext } from '../../context';
-import { Redirect } from 'react-router-dom';
+import React, { Component } from "react";
+import Task from "./Task/Task";
+import "./Home.css";
+import moment from "moment";
+import axios from "axios";
+import { AuthContext } from "../../context";
+import { Redirect } from "react-router-dom";
 
 export default class Home extends Component {
+  static contextType = AuthContext;
 
-    static contextType = AuthContext;
+  state = {
+    filters: {
+      showTodos: { checked: true, name: "todo" },
+      showInProgress: { checked: true, name: "in progress" },
+      showReady: { checked: true, name: "ready" },
+    },
+    tasks: [],
+  };
 
-    state = {
-        filters: {
-            showTodos: { checked: true, name: 'todo' },
-            showInProgress: { checked: true, name: 'in progress' },
-            showReady: { checked: true, name: 'ready' }
-        },
-        tasks: [],
+  componentDidMount() {
+    this._getTasks(["todo", "in progress", "ready"]);
+  }
+
+  _getTasks = async (states) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/tasks?progress=${states.join(",")}`,
+        { withCredentials: true }
+      );
+
+      this.setState({
+        ...this.state,
+        tasks: response.data.map((task) => ({ ...task, index: task.id })),
+      });
+    } catch (error) {
+      console.log(error.response);
+      if (error.response.status === 401) {
+        this.context.setAuthorised(false);
+        this.props.history.push("/sign-in");
+      }
     }
+  };
 
-    componentDidMount() {
-        this._getTasks(['todo', 'in progress', 'ready']);
-    }
+  _filterNames = ["showTodos", "showInProgress", "showReady"];
 
-    _getTasks = async (states) => {
-        try {
-            const response = await axios.get(`http://localhost:8080/tasks?progress=${states.join(',')}`, { withCredentials: true });
+  _updateFilter = (event) => {
+    console.log(event.target.name);
 
-            this.setState({
-                ...this.state,
-                tasks: response.data.map((task) => ({...task, index: task.id}))
-            });
+    let filters = { ...this.state.filters };
 
+    filters[event.target.name].checked = !filters[event.target.name].checked;
 
-        } catch (error) {
-            console.log(error.response);
-            if (error.response.status === 401) {
-                this.context.setAuthorised(false);
-                this.props.history.push('/sign-in');
-            }
-        }
+    this._getTasks(
+      Object.values(this.state.filters)
+        .filter((filter) => {
+          return filter.checked;
+        })
+        .map((filter) => filter.name)
+    );
 
-    }
+    this.setState({
+      ...this.state,
+      filters,
+    });
+  };
 
-    _filterNames = ['showTodos', 'showInProgress', 'showReady'];
+  _addNewTask = (event) => {
+    const tasks = [...this.state.tasks];
 
-    _updateFilter = (event) => {
-        console.log(event.target.name);
+    const index = Date.now() + tasks.length + 1;
 
-        let filters = { ...this.state.filters };
+    tasks.push({
+      description: "",
+      date: "",
+      filepath: null,
+      progress: "todo",
+      isChanged: true,
+      isNew: true,
+      index,
+    });
 
-        filters[event.target.name].checked = !filters[event.target.name].checked;
+    this.setState({
+      ...this.state,
+      tasks,
+    });
+  };
 
-        this._getTasks(Object.values(this.state.filters).filter((filter) => { return filter.checked }).map(filter => filter.name));
+  _updateTask = async (task) => {
+    let response = null;
 
-        this.setState({
-            ...this.state,
-            filters
-        });
-    }
-
-    _addNewTask = (event) => {
+    if (task.isNew) {
+      try {
+        response = await axios.post(
+          "http://localhost:8080/tasks",
+          {
+            ...task,
+          },
+          { withCredentials: true }
+        );
 
         const tasks = [...this.state.tasks];
 
-        const index = Date.now() + tasks.length + 1;
+        const deleteStartIndex = tasks.findIndex((value) => {
+          return value.index === task.index;
+        });
 
-        tasks.push({
-            description: '',
-            date: '',
-            filepath: null,
-            progress: 'todo',
-            isChanged: true,
-            isNew: true,
-            index
+        tasks.splice(deleteStartIndex, 1);
+
+        tasks.splice(deleteStartIndex, 0, {
+          ...task,
+          _id: response.data.id,
+          isNew: false,
+          isChanged: false,
         });
 
         this.setState({
-            ...this.state,
-            tasks
+          ...this.state,
+          tasks,
         });
-
+      } catch (error) {
+        console.log(error.response);
+        if (error.response.status === 401) {
+          this.context.setAuthorised(false);
+          this.props.history.push("/sign-in");
+        }
+      }
+    } else {
+      try {
+        response = await axios.put(
+          `http://localhost:8080/tasks/${task._id ? task._id : task.index}`,
+          {
+            ...task,
+          },
+          { withCredentials: true }
+        );
+      } catch (error) {
+        console.log(error.response);
+        if (error.response.status === 401) {
+          this.context.setAuthorised(false);
+          this.props.history.push("/sign-in");
+        }
+      }
     }
 
+    this._getTasks(
+      Object.values(this.state.filters)
+        .filter((filter) => {
+          return filter.checked;
+        })
+        .map((filter) => filter.name)
+    );
+  };
 
-    _updateTask = async (task) => {
+  _deleteTask = async (task) => {
+    let response;
 
-     
-            let response;
+    const tasks = [...this.state.tasks];
 
-            if (task.isNew) {
+    tasks.splice(
+      tasks.findIndex((value) => {
+        return value.index === task.index;
+      }),
+      1
+    );
 
-                try{
-                    response = await axios.post("http://localhost:8080/tasks", {
-                        ...task
-                    }, { withCredentials: true });
-                } catch (error) {
-                    console.log(error.response);
-                    if (error.response.status === 401) {
-                        this.context.setAuthorised(false);
-                        this.props.history.push('/sign-in');
-                    }
-                }
-
-                const tasks = [...this.state.tasks];
-
-                const deleteStartIndex = tasks.findIndex((value) => { return value.index === task.index });
-
-                tasks.splice(deleteStartIndex, 1);
-
-                tasks.splice(deleteStartIndex, 0, {
-                    ...task,
-                    _id: response.data.id,
-                    isNew: false,
-                    isChanged: false
-                });
-
-                this.setState({
-                    ...this.state,
-                    tasks
-                });
-
-            } else {
-                try{
-                    response = await axios.put(`http://localhost:8080/tasks/${task._id ? task._id : task.index}`, {
-                        ...task
-                    }, { withCredentials: true });
-                } catch (error) {
-                    console.log(error.response);
-                    if (error.response.status === 401) {
-                        this.context.setAuthorised(false);
-                        this.props.history.push('/sign-in');
-                    }
-                }
-            }
-
-            this._getTasks(Object.values(this.state.filters).filter((filter) => { return filter.checked }).map(filter => filter.name));
-
+    if (!task.isNew) {
+      try {
+        response = await axios.delete(
+          `http://localhost:8080/tasks/${task.id ? task.id : task.index}`,
+          { withCredentials: true }
+        );
+      } catch (error) {
+        console.log(error.response);
+        if (error.response.status === 401) {
+          this.context.setAuthorised(false);
+          this.props.history.push("/sign-in");
+        }
+      }
     }
 
-    _deleteTask = async (task) => {
+    this.setState({
+      ...this.state,
+      tasks,
+    });
+  };
 
-            let response;
-
-            const tasks = [...this.state.tasks];
-
-            tasks.splice(tasks.findIndex((value) => { return value.index === task.index }), 1);
-
-
-            if (!task.isNew) {
-                try{
-                    response = await axios.delete(`http://localhost:8080/tasks/${task.id ? task.id : task.index}`, { withCredentials: true });
-                } catch (error) {
-                    console.log(error.response);
-                    if (error.response.status === 401) {
-                        this.context.setAuthorised(false);
-                        this.props.history.push('/sign-in');
-                    }
-                }
-            }
-
-            this.setState({
-                ...this.state,
-                tasks
-            });
-
-        
-    }
-
-    render() {
-        if (this.context.isAuthorised) {
+  render() {
+    if (this.context.isAuthorised) {
+      return (
+        <div>
+          <ul className="Filters shadow-sm">
+            <li className="mr-2">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={this._addNewTask}
+              >
+                Add
+              </button>
+            </li>
+            <li>
+              <div className="form-check form-check-inline">
+                <input
+                  className="form-check-input"
+                  name="showTodos"
+                  type="checkbox"
+                  id="todo"
+                  onChange={this._updateFilter}
+                  checked={this.state.filters.showTodos.checked}
+                />
+                <label className="form-check-label" htmlFor="todo">
+                  {" "}
+                  todo{" "}
+                </label>
+              </div>
+            </li>
+            <li>
+              <div className="form-check form-check-inline">
+                <input
+                  className="form-check-input"
+                  name="showInProgress"
+                  type="checkbox"
+                  id="inProgress"
+                  onChange={this._updateFilter}
+                  checked={this.state.filters.showInProgress.checked}
+                />
+                <label className="form-check-label" htmlFor="inProgress">
+                  {" "}
+                  in progress{" "}
+                </label>
+              </div>
+            </li>
+            <li>
+              <div className="form-check form-check-inline">
+                <input
+                  className="form-check-input"
+                  name="showReady"
+                  type="checkbox"
+                  id="ready"
+                  onChange={this._updateFilter}
+                  checked={this.state.filters.showReady.checked}
+                />
+                <label className="form-check-label" htmlFor="ready">
+                  {" "}
+                  ready{" "}
+                </label>
+              </div>
+            </li>
+          </ul>
+          {this.state.tasks.map((task) => {
+            const {
+              description,
+              date,
+              filepath,
+              progress,
+              isChanged,
+              isNew,
+              id,
+              index,
+            } = task;
 
             return (
-                <div>
-                    <ul className="Filters shadow-sm">
-                        <li className="mr-2">
-                            <button type="button" className="btn btn-secondary" onClick={this._addNewTask}>
-                                Add
-                </button>
-                        </li>
-                        <li>
-                            <div className="form-check form-check-inline">
-                                <input className="form-check-input" name="showTodos" type="checkbox" id="todo" onChange={this._updateFilter} checked={this.state.filters.showTodos.checked} />
-                                <label className="form-check-label" htmlFor="todo"> todo </label>
-                            </div>
-                        </li>
-                        <li>
-                            <div className="form-check form-check-inline">
-                                <input className="form-check-input" name="showInProgress" type="checkbox" id="inProgress" onChange={this._updateFilter} checked={this.state.filters.showInProgress.checked} />
-                                <label className="form-check-label" htmlFor="inProgress"> in progress </label>
-                            </div>
-                        </li>
-                        <li>
-                            <div className="form-check form-check-inline">
-                                <input className="form-check-input" name="showReady" type="checkbox" id="ready" onChange={this._updateFilter} checked={this.state.filters.showReady.checked} />
-                                <label className="form-check-label" htmlFor="ready"> ready </label>
-                            </div>
-                        </li>
-                    </ul>
-                    {
-                        this.state.tasks.map((task) => {
-
-                            const { description, date, filepath, progress, isChanged, isNew, id, index } = task;
-
-                            return <Task
-                                key={index ? index : id}
-                                index={id ? id : index}
-                                description={description}
-                                date={date} filepath={filepath}
-                                progress={progress}
-                                isDateValid={moment(date, 'DD.MM.YYYY').isValid()}
-                                isChanged={isChanged}
-                                updateTask={this._updateTask}
-                                deleteTask={this._deleteTask}
-                                isNew={isNew}>
-                            </Task>
-                        })
-                    }
-                </div >
-            )
-        } else {
-            return (<Redirect to='/sign-in'></Redirect>);
-        }
+              <Task
+                key={index ? index : id}
+                index={id ? id : index}
+                description={description}
+                date={date}
+                filepath={filepath}
+                progress={progress}
+                isDateValid={moment(date, "DD.MM.YYYY").isValid()}
+                isChanged={isChanged}
+                updateTask={this._updateTask}
+                deleteTask={this._deleteTask}
+                isNew={isNew}
+              ></Task>
+            );
+          })}
+        </div>
+      );
+    } else {
+      return <Redirect to="/sign-in"></Redirect>;
     }
+  }
 }
