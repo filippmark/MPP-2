@@ -28,11 +28,11 @@ exports.isValidToken = (token) => {
             return false;
         }
         const decrypt = jwt.verify(token, process.env.JWT_SECRET);
-        
+        console.log(decrypt);
         return decrypt.id;
     } catch (err) {
         console.log(err);
-        throw err;
+        return null;
     }
 
 }

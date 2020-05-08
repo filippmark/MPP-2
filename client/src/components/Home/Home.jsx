@@ -45,12 +45,23 @@ export default class Home extends Component {
 
         socket.on(deleteTask, (data) => {
             console.log(data);
+            if(data.error){
+                console.log(data);
+                if (data.error === 'Unauthorised') {
+                    this.context.setAuthorised(false);
+                    this.props.history.push('/sign-in');
+                }
+            }
         });
 
 
         socket.on(postTask, (data) => {
             if(data.error){
                 console.log(data);
+                if (data.error === 'Unauthorised') {
+                    this.context.setAuthorised(false);
+                    this.props.history.push('/sign-in');
+                }
             }else{
                 const {index, _id} = data;
                 console.log(data);
@@ -76,6 +87,13 @@ export default class Home extends Component {
 
         socket.on(updateTask, (data) => {
             console.log(data);
+            if(data.error){
+                console.log(data);
+                if (data.error === 'Unauthorised') {
+                    this.context.setAuthorised(false);
+                    this.props.history.push('/sign-in');
+                }
+            }
         });
     }
 
