@@ -36,7 +36,8 @@ exports.isValidToken = async (req, res, next) => {
             req.user = false;
             next();
         } else {
-            const decrypt = await jwt.verify(token, process.env.JWT_SECRET);
+            const decrypt = jwt.verify(token, process.env.JWT_SECRET);
+            console.log(decrypt);
             req.user = {
                 id: decrypt.id,
                 email: decrypt.email,
@@ -44,7 +45,8 @@ exports.isValidToken = async (req, res, next) => {
             next();
         }
     } catch (err) {
-        return res.status(500).json(err.toString());
+        req.user = null;
+        next();
     }
 
 }

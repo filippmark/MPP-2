@@ -125,27 +125,31 @@ export default class Home extends Component {
                     `
                 }, { withCredentials: true });
 
-                console.log(response);
+                if (response.data.errors) {
+                    this.context.setAuthorised(false);
+                    this.props.history.push('/sign-in');
+                } else {
+                    console.log(response);
 
-                const tasks = [...this.state.tasks];
+                    const tasks = [...this.state.tasks];
 
-                const deleteStartIndex = tasks.findIndex((value) => { return value.index === task.index });
+                    const deleteStartIndex = tasks.findIndex((value) => { return value.index === task.index });
 
-                tasks.splice(deleteStartIndex, 1);
+                    tasks.splice(deleteStartIndex, 1);
 
-                tasks.splice(deleteStartIndex, 0, {
-                    ...task,
-                    _id: response.data.data.createTask._id,
-                    isNew: false,
-                    isChanged: false
-                });
+                    tasks.splice(deleteStartIndex, 0, {
+                        ...task,
+                        _id: response.data.data.createTask._id,
+                        isNew: false,
+                        isChanged: false
+                    });
 
-                this.setState({
-                    ...this.state,
-                    tasks
-                });
-
-            } else {
+                    this.setState({
+                        ...this.state,
+                        tasks
+                    });
+                }
+            }else {
                 console.log(task);
                 response = await axios.post(graphqlEndpoint, {
                     query: `
@@ -158,6 +162,10 @@ export default class Home extends Component {
                 }, { withCredentials: true });
 
                 console.log(response);
+                if (response.data.errors) {
+                    this.context.setAuthorised(false);
+                    this.props.history.push('/sign-in');
+                }
             }
 
             this._getTasks(Object.values(this.state.filters).filter((filter) => { return filter.checked }).map(filter => filter.name));
@@ -189,6 +197,11 @@ export default class Home extends Component {
                     `
                 }, { withCredentials: true });
                 console.log(response);
+
+                if (response.data.errors) {
+                    this.context.setAuthorised(false);
+                    this.props.history.push('/sign-in');
+                }
             }
 
             this.setState({
